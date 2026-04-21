@@ -1,0 +1,64 @@
+/* =============================================
+   GROUPE GABON — Styles globaux
+   ============================================= */
+
+/* Reset de base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Body */
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background-color: #f7f5f0;
+  color: #1a1a18;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Liens */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Scroll smooth */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Utilitaires typographiques */
+.font-serif {
+  font-family: "Georgia", serif;
+}
+
+.font-mono {
+  font-family: "Courier New", monospace;
+}
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #999;
+  font-family: "Courier New", monospace;
+}
+
+/* Divider horizontal */
+.divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    #c8c4bc 30%,
+    #c8c4bc 70%,
+    transparent
+  );
+  margin: 0 auto 5rem;
+  max-width: 1200px;
+  padding: 0 2rem;
+}
