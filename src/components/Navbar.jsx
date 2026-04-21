@@ -3,133 +3,209 @@ import { companies } from "../data/companies";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
+  /* Scroll navbar */
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
-    };
-
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /* Bloquer scroll quand menu ouvert */
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [menuOpen]);
+
+  const navBg = scrolled || menuOpen
+    ? "rgba(10,10,10,0.95)"
+    : "transparent";
+
   return (
-    <nav
-      style={{
+    <>
+      {/* NAVBAR */}
+      <nav style={{
         position: "fixed",
         top: 0,
         width: "100%",
         zIndex: 1000,
-        transition: "all 0.3s ease",
-
-        background: scrolled
-          ? "rgba(10,10,10,0.85)"
-          : "transparent",
-
-        backdropFilter: scrolled ? "blur(10px)" : "none",
-        borderBottom: scrolled
-          ? "1px solid rgba(255,255,255,0.08)"
-          : "none",
-      }}
-    >
-      <div
-        style={{
+        background: navBg,
+        backdropFilter: "blur(10px)",
+        transition: "0.3s",
+      }}>
+        <div style={{
           maxWidth: 1200,
           margin: "0 auto",
-          padding: "0 2rem",
-          height: 70,
+          padding: "0 1rem",
+          height: 60,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-        }}
-      >
-        {/* LOGO */}
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <span
-            style={{
-              fontFamily: "'Georgia', serif",
-              fontWeight: 700,
-              fontSize: 20,
-              color: "white",
-              letterSpacing: "-0.02em",
-            }}
+        }}>
+
+          {/* LOGO */}
+          <a
+            href="/"
+            onClick={(e) => e.preventDefault()}
+            style={{ textDecoration: "none" }}
           >
-            GROUPE
-          </span>
+            <span style={{ color: "#fff", fontWeight: 700 }}>GROUPE</span>
+            <span style={{ color: "#f59e0b", marginLeft: 5 }}>AZOR</span>
+          </a>
 
-          <span
-            style={{
-              fontFamily: "'Georgia', serif",
-              fontWeight: 700,
-              fontSize: 20,
-              color: "#f59e0b",
-              marginLeft: 6,
-            }}
-          >
-            AZOR
-          </span>
+          {/* DESKTOP */}
+          <div className="desktop-links" style={{
+            display: "flex",
+            gap: "1.5rem",
+          }}>
+            {companies.map((c) => (
+              <NavLink key={c.id} company={c} />
+            ))}
+          </div>
+
+          {/* RIGHT */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <a href="/contact" className="cta-btn">
+              Contact
+            </a>
+
+            {/* HAMBURGER */}
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="hamburger"
+              aria-label="menu"
+            >
+              <HamburgerIcon open={menuOpen} />
+            </button>
+          </div>
         </div>
+      </nav>
 
-        {/* NAV LINKS */}
-        <div style={{ display: "flex", gap: "2rem" }}>
-          {companies.map((company) => (
-            <NavLink key={company.id} company={company} />
-          ))}
-        </div>
-
-        {/* CTA */}
-        <a
-          href="/contact"
+      {/* OVERLAY */}
+      {menuOpen && (
+        <div
+          onClick={() => setMenuOpen(false)}
           style={{
-            background: "#f59e0b",
-            color: "black",
-            padding: "10px 16px",
-            borderRadius: 6,
-            fontSize: 12,
-            fontWeight: 600,
-            textDecoration: "none",
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 999,
           }}
-        >
-          Contact
-        </a>
+        />
+      )}
+
+      {/* MENU MOBILE */}
+      <div style={{
+        position: "fixed",
+        top: 0,
+        right: menuOpen ? 0 : "-100%",
+        width: "75%",
+        maxWidth: 300,
+        height: "100vh",
+        background: "#111",
+        zIndex: 1001,
+        transition: "right 0.3s ease",
+        padding: "80px 20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 20,
+      }}>
+        {companies.map((c) => (
+          <a
+            key={c.id}
+            href={`#${c.id}`}
+            onClick={() => setMenuOpen(false)}
+            style={{
+              color: "#ddd",
+              textDecoration: "none",
+              fontSize: 16,
+              borderBottom: "1px solid rgba(255,255,255,0.1)",
+              paddingBottom: 10,
+            }}
+          >
+            {c.name}
+          </a>
+        ))}
       </div>
-    </nav>
+
+      {/* STYLES */}
+      <style>{`
+        .hamburger {
+          display: none;
+          background: none;
+          border: none;
+          cursor: pointer;
+        }
+
+        .cta-btn {
+          background: #f59e0b;
+          color: #000;
+          padding: 8px 14px;
+          font-size: 12px;
+          font-weight: 700;
+          text-decoration: none;
+          border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+          .desktop-links {
+            display: none !important;
+          }
+
+          .cta-btn {
+            display: none;
+          }
+
+          .hamburger {
+            display: block;
+          }
+        }
+      `}</style>
+    </>
   );
 }
 
-/* LIEN */
+/* NAV LINK */
 function NavLink({ company }) {
-  const [hover, setHover] = useState(false);
-
   return (
     <a
       href={`#${company.id}`}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
       style={{
-        position: "relative",
-        fontSize: 13,
-        color: hover ? "#f59e0b" : "#ddd",
+        color: "#ddd",
         textDecoration: "none",
-        letterSpacing: "0.05em",
-        fontWeight: 500,
-        transition: "all 0.2s ease",
+        fontSize: 13,
       }}
     >
       {company.name}
-
-      {/* underline animation */}
-      <span
-        style={{
-          position: "absolute",
-          bottom: -6,
-          left: 0,
-          height: 2,
-          width: hover ? "100%" : "0%",
-          background: "#f59e0b",
-          transition: "width 0.3s ease",
-        }}
-      />
     </a>
+  );
+}
+
+/* HAMBURGER ICON */
+function HamburgerIcon({ open }) {
+  const style = (rotate, y, opacity = 1) => ({
+    width: 22,
+    height: 2,
+    background: "#fff",
+    margin: "4px 0",
+    transform: `rotate(${rotate}deg) translateY(${y}px)`,
+    opacity,
+    transition: "0.3s",
+  });
+
+  return (
+    <div>
+      <div style={style(open ? 45 : 0, open ? 6 : 0)} />
+      <div style={style(0, 0, open ? 0 : 1)} />
+      <div style={style(open ? -45 : 0, open ? -6 : 0)} />
+    </div>
   );
 }

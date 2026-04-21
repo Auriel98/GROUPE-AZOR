@@ -1,18 +1,6 @@
 import { useState, useEffect } from "react";
 import { useInView } from "../hooks/useInView";
 
-const COLORS = {
-  accent: "#f59e0b",
-  accentHover: "#d97706",
-  border: "#E8E4DE",
-  bgCard: "#fff",
-  bgHeader: "#FAFAF8",
-  textTitle: "#1A1A18",
-  textBody: "#555",
-  textMuted: "#888",
-  textFaint: "#999",
-};
-
 function useIsMobile(breakpoint = 640) {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < breakpoint : false
@@ -21,6 +9,7 @@ function useIsMobile(breakpoint = 640) {
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < breakpoint);
     check();
+
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, [breakpoint]);
@@ -29,213 +18,257 @@ function useIsMobile(breakpoint = 640) {
 }
 
 export default function CompanyCard({ company, index }) {
-  const [ref, inView] = useInView(0.05);
+  const [ref, inView] = useInView(0.08);
   const [hovered, setHovered] = useState(false);
   const isMobile = useIsMobile();
-
-  // ✅ FIX MOBILE VISIBILITY
-  const visible = isMobile ? true : inView;
 
   return (
     <div
       ref={ref}
       id={company.id}
-      onMouseEnter={() => !isMobile && setHovered(true)}
-      onMouseLeave={() => !isMobile && setHovered(false)}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        background: COLORS.bgCard,
-        border: `1px solid ${hovered ? company.color : COLORS.border}`,
-        borderRadius: 4,
+        position: "relative",
+        background: "#ffffff",
+        borderRadius: "22px",
+        border: `1px solid ${hovered ? company.color : "#ececec"}`,
         overflow: "hidden",
-        transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
-
-        // ✅ FIX
-        transform: visible
-          ? hovered && !isMobile
-            ? "translateX(4px)"
-            : "translateX(0)"
+        opacity: inView ? 1 : 0,
+        transform: inView
+          ? hovered
+            ? "translateY(-8px)"
+            : "translateY(0)"
           : "translateY(40px)",
-
-        opacity: visible ? 1 : 0,
-
-        transitionDelay: visible ? `${index * 0.12}s` : "0s",
-
-        boxShadow: hovered ? `0 8px 40px ${company.color}1a` : "none",
-
-        display: "grid",
-        gridTemplateColumns: isMobile ? "1fr" : "340px 1fr",
-        width: "100%",
+        transition:
+          "all 0.55s ease, transform 0.4s ease, box-shadow 0.4s ease",
+        transitionDelay: `${index * 0.08}s`,
+        boxShadow: hovered
+          ? `0 25px 50px rgba(0,0,0,0.12)`
+          : "0 10px 25px rgba(0,0,0,0.06)",
       }}
     >
-      <CardLeft company={company} hovered={hovered} isMobile={isMobile} />
-      <CardRight company={company} isMobile={isMobile} />
-    </div>
-  );
-}
-
-function CardLeft({ company, hovered, isMobile }) {
-  // ✅ MOBILE
-  if (isMobile) {
-    return (
+      {/* Glow top */}
       <div
         style={{
-          padding: "1rem 1.25rem",
-          background: COLORS.bgHeader,
-          borderBottom: `1px solid ${COLORS.border}`,
-          display: "flex",
-          alignItems: "center",
-          gap: "0.875rem",
+          position: "absolute",
+          top: -60,
+          right: -60,
+          width: 140,
+          height: 140,
+          borderRadius: "50%",
+          background: `${company.color}18`,
+          filter: "blur(20px)",
+        }}
+      />
+
+      {/* Header line */}
+      <div
+        style={{
+          height: 5,
+          width: "100%",
+          background: `linear-gradient(90deg, ${company.color}, ${company.accentColor || company.color})`,
+        }}
+      />
+
+      <div
+        style={{
+          padding: isMobile ? "1.2rem" : "1.7rem",
+          position: "relative",
+          zIndex: 2,
         }}
       >
-        {/* LOGO */}
+        {/* TOP */}
         <div
           style={{
-            width: 52,
-            height: 52,
-            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            marginBottom: "1rem",
+          }}
+        >
+          {/* LOGO */}
+          <div
+            style={{
+              width: isMobile ? 58 : 72,
+              height: isMobile ? 58 : 72,
+              minWidth: isMobile ? 58 : 72,
+              borderRadius: "18px",
+              background: "linear-gradient(145deg,#fff,#f4f4f4)",
+              border: "1px solid #eee",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7)",
+            }}
+          >
+            <img
+              src={`/${company.logo}`}
+              alt={company.name}
+              style={{
+                width: "70%",
+                height: "70%",
+                objectFit: "contain",
+              }}
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                e.currentTarget.nextSibling.style.display = "flex";
+              }}
+            />
+
+            <span
+              style={{
+                display: "none",
+                fontSize: 28,
+                color: company.color,
+              }}
+            >
+              {company.icon}
+            </span>
+          </div>
+
+          {/* INFOS */}
+          <div style={{ flex: 1 }}>
+            <span
+              style={{
+                display: "inline-block",
+                padding: "5px 10px",
+                borderRadius: "999px",
+                background: company.lightColor,
+                color: company.color,
+                fontSize: 11,
+                fontWeight: 700,
+                marginBottom: 8,
+                letterSpacing: "0.04em",
+              }}
+            >
+              {company.sector}
+            </span>
+
+            <h3
+              style={{
+                margin: 0,
+                fontSize: isMobile ? 18 : 22,
+                fontWeight: 800,
+                color: "#111",
+                lineHeight: 1.2,
+              }}
+            >
+              {company.name}
+            </h3>
+
+            <p
+              style={{
+                margin: "4px 0 0",
+                color: "#888",
+                fontSize: 13,
+              }}
+            >
+              {company.location}
+            </p>
+          </div>
+        </div>
+
+        {/* Tagline */}
+        <p
+          style={{
+            margin: "0 0 1rem",
+            color: company.color,
+            fontSize: 14,
+            fontWeight: 600,
+            lineHeight: 1.6,
+          }}
+        >
+          {company.tagline}
+        </p>
+
+        {/* Description */}
+        <p
+          style={{
+            margin: "0 0 1.2rem",
+            color: "#555",
+            fontSize: 14,
+            lineHeight: 1.8,
+          }}
+        >
+          {company.description}
+        </p>
+
+        {/* Services */}
+        <div style={{ marginBottom: "1.4rem" }}>
+          <p
+            style={{
+              margin: "0 0 0.7rem",
+              fontSize: 12,
+              color: "#999",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Prestations
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+            }}
+          >
+            {company.services.map((service) => (
+              <span
+                key={service}
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: "999px",
+                  background: company.lightColor,
+                  color: company.color,
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                {service}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <a
+          href={company.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#fff",
-            borderRadius: 4,
-            border: `1px solid ${COLORS.border}`,
-            padding: "0.375rem",
-            overflow: "hidden",
+            gap: 10,
+            width: "100%",
+            padding: "14px 18px",
+            borderRadius: "14px",
+            background: `linear-gradient(135deg, ${company.color}, ${company.accentColor || company.color})`,
+            color: "#fff",
+            textDecoration: "none",
+            fontWeight: 700,
+            fontSize: 13,
+            letterSpacing: "0.05em",
+            transition: "0.3s ease",
+            boxShadow: `0 12px 25px ${company.color}35`,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.opacity = "0.92";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.opacity = "1";
           }}
         >
-          <img
-            src={`/${company.logo}`}
-            alt={company.name}
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
-          />
-        </div>
-
-        <div style={{ flex: 1 }}>
-          <SectorBadge company={company} />
-          <h3 style={{ fontSize: 16, fontWeight: 700 }}>
-            {company.name}
-          </h3>
-          <p style={{ fontSize: 11, color: COLORS.textMuted }}>
-            {company.location}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ✅ DESKTOP
-  return (
-    <div
-      style={{
-        padding: "2.5rem",
-        background: hovered ? company.lightColor : COLORS.bgHeader,
-        borderRight: `1px solid ${COLORS.border}`,
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.5rem",
-      }}
-    >
-      {/* LOGO */}
-      <div
-        style={{
-          height: 120,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#fff",
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 4,
-        }}
-      >
-        <img
-          src={`/${company.logo}`}
-          alt={company.name}
-          style={{
-            maxWidth: "100%",
-            maxHeight: "100%",
-            objectFit: "contain",
-            transform: hovered ? "scale(1.05)" : "scale(1)",
-            transition: "0.3s",
-          }}
-        />
-      </div>
-
-      <div>
-        <SectorBadge company={company} />
-        <h3 style={{ fontSize: 24, fontWeight: 700 }}>
-          {company.name}
-        </h3>
-        <p style={{ fontSize: 12, color: COLORS.textMuted }}>
-          {company.location}
-        </p>
-      </div>
-
-      <p style={{ fontStyle: "italic", marginTop: "auto" }}>
-        {company.tagline}
-      </p>
-    </div>
-  );
-}
-
-function CardRight({ company, isMobile }) {
-  return (
-    <div
-      style={{
-        padding: isMobile ? "1.25rem" : "2.5rem",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1rem",
-        width: "100%",
-      }}
-    >
-      {isMobile && <p>{company.tagline}</p>}
-
-      <p>{company.description}</p>
-
-      <ServicesList company={company} isMobile={isMobile} />
-      <CTAButton company={company} isMobile={isMobile} />
-    </div>
-  );
-}
-
-function SectorBadge({ company }) {
-  return <span>{company.sector}</span>;
-}
-
-function ServicesList({ company, isMobile }) {
-  return (
-    <div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: isMobile ? "repeat(2,1fr)" : "repeat(3,1fr)",
-          gap: 6,
-        }}
-      >
-        {company.services.map((s) => (
-          <div key={s}>{s}</div>
-        ))}
+          Visiter le site →
+        </a>
       </div>
     </div>
-  );
-}
-
-function CTAButton({ company, isMobile }) {
-  return (
-    <a
-      href={company.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        background: company.color,
-        color: "#fff",
-        padding: "12px",
-        width: "100%",
-      }}
-    >
-      Visiter le site →
-    </a>
   );
 }
