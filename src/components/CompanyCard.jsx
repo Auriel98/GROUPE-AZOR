@@ -61,34 +61,68 @@ export default function CompanyCard({ company, index }) {
 
 /* ── Colonne gauche ──────────────────────────────────────────────────────── */
 function CardLeft({ company, hovered, isMobile }) {
+  if (isMobile) {
+    return (
+      <div
+        style={{
+          padding:      "1rem 1.25rem",
+          background:   hovered ? company.lightColor : COLORS.bgHeader,
+          transition:   "background 0.4s ease",
+          borderBottom: `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
+          display:      "flex",
+          alignItems:   "center",
+          gap:          "0.875rem",
+        }}
+      >
+        <div style={{
+          width: 52, height: 52, flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          background: "#fff", borderRadius: 4, border: `1px solid ${COLORS.border}`,
+          padding: "0.375rem", overflow: "hidden",
+        }}>
+          <img
+            src={`/${company.logo}`}
+            alt={`Logo ${company.name}`}
+            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+            onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "block"; }}
+          />
+          <span style={{ display: "none", fontSize: 22, color: company.color, lineHeight: 1 }}>{company.icon}</span>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <SectorBadge company={company} />
+          <h3 style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Georgia', serif", color: COLORS.textTitle, margin: "2px 0", lineHeight: 1.2 }}>
+            {company.name}
+          </h3>
+          <p style={{ fontSize: 11, color: COLORS.textMuted, margin: 0, letterSpacing: "0.05em" }}>{company.location}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
-        padding:       isMobile ? "1.25rem" : "2.5rem",
+        padding:       "2.5rem",
         background:    hovered ? company.lightColor : COLORS.bgHeader,
         transition:    "background 0.4s ease",
-        borderRight:   isMobile ? "none" : `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
-        borderBottom:  isMobile ? `1px solid ${hovered ? company.color + "33" : COLORS.border}` : "none",
+        borderRight:   `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
         display:       "flex",
-        flexDirection: isMobile ? "row" : "column",
-        alignItems:    isMobile ? "center" : "stretch",
-        gap:           isMobile ? "1rem" : "1.5rem",
-        flexWrap:      isMobile ? "wrap" : "nowrap",
+        flexDirection: "column",
+        gap:           "1.5rem",
       }}
     >
-      {/* LOGO */}
+      {/* Logo grand format */}
       <div
         style={{
-          width:          isMobile ? 72 : "100%",
-          height:         isMobile ? 72 : 120,
-          flexShrink:     0,
+          width:          "100%",
+          height:         120,
           display:        "flex",
           alignItems:     "center",
           justifyContent: "center",
           background:     "#fff",
           borderRadius:   4,
           border:         `1px solid ${COLORS.border}`,
-          padding:        isMobile ? "0.5rem" : "1rem",
+          padding:        "1rem",
           overflow:       "hidden",
         }}
       >
@@ -107,64 +141,48 @@ function CardLeft({ company, hovered, isMobile }) {
             e.currentTarget.nextSibling.style.display = "block";
           }}
         />
-        <span
-          style={{
-            display:    "none",
-            fontSize:   isMobile ? 28 : 48,
-            color:      company.color,
-            lineHeight: 1,
-          }}
-        >
+        <span style={{ display: "none", fontSize: 48, color: company.color, lineHeight: 1 }}>
           {company.icon}
         </span>
       </div>
 
       {/* Identité */}
-      <div style={{ flex: isMobile ? 1 : "unset", minWidth: 0 }}>
+      <div>
         <SectorBadge company={company} />
         <h3
           style={{
-            fontSize:   isMobile ? 18 : 26,
+            fontSize:   26,
             fontWeight: 700,
             fontFamily: "'Georgia', serif",
             color:      COLORS.textTitle,
-            margin:     "0 0 4px",
+            margin:     "0 0 6px",
             lineHeight: 1.1,
           }}
         >
           {company.name}
         </h3>
-        <p
-          style={{
-            fontSize:      11,
-            color:         COLORS.textMuted,
-            margin:        0,
-            letterSpacing: "0.05em",
-          }}
-        >
+        <p style={{ fontSize: 12, color: COLORS.textMuted, margin: 0, letterSpacing: "0.05em" }}>
           {company.location}
         </p>
       </div>
 
-      {/* Tagline — masquée sur mobile pour gain de place */}
-      {!isMobile && (
-        <p
-          style={{
-            fontStyle:     "italic",
-            color:         company.accentColor,
-            fontSize:      13,
-            letterSpacing: "0.03em",
-            margin:        0,
-            fontFamily:    "'Georgia', serif",
-            lineHeight:    1.5,
-            marginTop:     "auto",
-            paddingTop:    "0.5rem",
-            borderTop:     `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
-          }}
-        >
-          {company.tagline}
-        </p>
-      )}
+      {/* Tagline */}
+      <p
+        style={{
+          fontStyle:     "italic",
+          color:         company.accentColor,
+          fontSize:      13,
+          letterSpacing: "0.03em",
+          margin:        0,
+          fontFamily:    "'Georgia', serif",
+          lineHeight:    1.5,
+          marginTop:     "auto",
+          paddingTop:    "0.5rem",
+          borderTop:     `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
+        }}
+      >
+        {company.tagline}
+      </p>
     </div>
   );
 }
