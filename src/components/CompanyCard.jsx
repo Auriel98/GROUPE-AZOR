@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useInView } from "../hooks/useInView";
 
 // ─── Palette partagée ────────────────────────────────────────────────────────
@@ -13,15 +13,23 @@ const COLORS = {
   textMuted:   "#888",
   textFaint:   "#999",
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * CompanyCard — carte horizontale pleine largeur avec animation au scroll.
- * Disposition : colonne gauche (logo + identité) | colonne droite (détails + CTA)
- */
+function useIsMobile(breakpoint = 640) {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < breakpoint : false
+  );
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < breakpoint);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 export default function CompanyCard({ company, index }) {
   const [ref, inView] = useInView(0.1);
   const [hovered, setHovered] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -36,47 +44,51 @@ export default function CompanyCard({ company, index }) {
         overflow:            "hidden",
         transition:          "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
         transform:           inView
-          ? hovered ? "translateX(4px)" : "translateX(0)"
+          ? hovered && !isMobile ? "translateX(4px)" : "translateX(0)"
           : "translateY(40px)",
         opacity:             inView ? 1 : 0,
         transitionDelay:     inView ? `${index * 0.12}s` : "0s",
         boxShadow:           hovered ? `0 8px 40px ${company.color}1a` : "none",
         display:             "grid",
-        gridTemplateColumns: "340px 1fr",
+        gridTemplateColumns: isMobile ? "1fr" : "340px 1fr",
       }}
     >
-      <CardLeft company={company} hovered={hovered} />
-      <CardRight company={company} />
+      <CardLeft company={company} hovered={hovered} isMobile={isMobile} />
+      <CardRight company={company} isMobile={isMobile} />
     </div>
   );
 }
 
-/* ── Colonne gauche : logo grand format + badge + nom + localisation + tagline */
-function CardLeft({ company, hovered }) {
+/* ── Colonne gauche ──────────────────────────────────────────────────────── */
+function CardLeft({ company, hovered, isMobile }) {
   return (
     <div
       style={{
-        padding:        "2.5rem",
-        background:     hovered ? company.lightColor : COLORS.bgHeader,
-        transition:     "background 0.4s ease",
-        borderRight:    `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
-        display:        "flex",
-        flexDirection:  "column",
-        gap:            "1.5rem",
+        padding:       isMobile ? "1.25rem" : "2.5rem",
+        background:    hovered ? company.lightColor : COLORS.bgHeader,
+        transition:    "background 0.4s ease",
+        borderRight:   isMobile ? "none" : `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
+        borderBottom:  isMobile ? `1px solid ${hovered ? company.color + "33" : COLORS.border}` : "none",
+        display:       "flex",
+        flexDirection: isMobile ? "row" : "column",
+        alignItems:    isMobile ? "center" : "stretch",
+        gap:           isMobile ? "1rem" : "1.5rem",
+        flexWrap:      isMobile ? "wrap" : "nowrap",
       }}
     >
-      {/* LOGO grand format */}
+      {/* LOGO */}
       <div
         style={{
-          width:          "100%",
-          height:         120,
+          width:          isMobile ? 72 : "100%",
+          height:         isMobile ? 72 : 120,
+          flexShrink:     0,
           display:        "flex",
           alignItems:     "center",
           justifyContent: "center",
           background:     "#fff",
           borderRadius:   4,
           border:         `1px solid ${COLORS.border}`,
-          padding:        "1rem",
+          padding:        isMobile ? "0.5rem" : "1rem",
           overflow:       "hidden",
         }}
       >
@@ -91,16 +103,14 @@ function CardLeft({ company, hovered }) {
             transform:  hovered ? "scale(1.05)" : "scale(1)",
           }}
           onError={(e) => {
-            // Fallback vers l'icône emoji si le logo est introuvable
             e.currentTarget.style.display = "none";
             e.currentTarget.nextSibling.style.display = "block";
           }}
         />
-        {/* Fallback emoji — caché par défaut */}
         <span
           style={{
             display:    "none",
-            fontSize:   48,
+            fontSize:   isMobile ? 28 : 48,
             color:      company.color,
             lineHeight: 1,
           }}
@@ -110,15 +120,15 @@ function CardLeft({ company, hovered }) {
       </div>
 
       {/* Identité */}
-      <div>
+      <div style={{ flex: isMobile ? 1 : "unset", minWidth: 0 }}>
         <SectorBadge company={company} />
         <h3
           style={{
-            fontSize:   26,
+            fontSize:   isMobile ? 18 : 26,
             fontWeight: 700,
             fontFamily: "'Georgia', serif",
             color:      COLORS.textTitle,
-            margin:     "0 0 6px",
+            margin:     "0 0 4px",
             lineHeight: 1.1,
           }}
         >
@@ -126,7 +136,7 @@ function CardLeft({ company, hovered }) {
         </h3>
         <p
           style={{
-            fontSize:      12,
+            fontSize:      11,
             color:         COLORS.textMuted,
             margin:        0,
             letterSpacing: "0.05em",
@@ -136,55 +146,72 @@ function CardLeft({ company, hovered }) {
         </p>
       </div>
 
-      {/* Tagline */}
-      <p
-        style={{
-          fontStyle:     "italic",
-          color:         company.accentColor,
-          fontSize:      13,
-          letterSpacing: "0.03em",
-          margin:        0,
-          fontFamily:    "'Georgia', serif",
-          lineHeight:    1.5,
-          marginTop:     "auto",
-          paddingTop:    "0.5rem",
-          borderTop:     `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
-        }}
-      >
-        {company.tagline}
-      </p>
+      {/* Tagline — masquée sur mobile pour gain de place */}
+      {!isMobile && (
+        <p
+          style={{
+            fontStyle:     "italic",
+            color:         company.accentColor,
+            fontSize:      13,
+            letterSpacing: "0.03em",
+            margin:        0,
+            fontFamily:    "'Georgia', serif",
+            lineHeight:    1.5,
+            marginTop:     "auto",
+            paddingTop:    "0.5rem",
+            borderTop:     `1px solid ${hovered ? company.color + "33" : COLORS.border}`,
+          }}
+        >
+          {company.tagline}
+        </p>
+      )}
     </div>
   );
 }
 
-/* ── Colonne droite : description, prestations, CTA ─────────────────────── */
-function CardRight({ company }) {
+/* ── Colonne droite ──────────────────────────────────────────────────────── */
+function CardRight({ company, isMobile }) {
   return (
     <div
       style={{
-        padding:        "2.5rem",
-        display:        "flex",
-        flexDirection:  "column",
-        justifyContent: "space-between",
+        padding:       isMobile ? "1.25rem" : "2.5rem",
+        display:       "flex",
+        flexDirection: "column",
+        gap:           isMobile ? "1rem" : "1.5rem",
       }}
     >
+      {/* Tagline mobile */}
+      {isMobile && (
+        <p
+          style={{
+            fontStyle:     "italic",
+            color:         company.accentColor,
+            fontSize:      12,
+            letterSpacing: "0.03em",
+            margin:        0,
+            fontFamily:    "'Georgia', serif",
+            lineHeight:    1.5,
+          }}
+        >
+          {company.tagline}
+        </p>
+      )}
+
       <p
         style={{
-          fontSize:   14,
+          fontSize:   isMobile ? 13 : 14,
           color:      COLORS.textBody,
           lineHeight: 1.75,
-          margin:     "0 0 2rem",
+          margin:     0,
           maxWidth:   620,
         }}
       >
         {company.description}
       </p>
 
-      <ServicesList company={company} />
+      <ServicesList company={company} isMobile={isMobile} />
 
-      <div style={{ marginTop: "auto", paddingTop: "1.5rem" }}>
-        <CTAButton company={company} />
-      </div>
+      <CTAButton company={company} isMobile={isMobile} />
     </div>
   );
 }
@@ -204,7 +231,7 @@ function SectorBadge({ company }) {
         background:    company.lightColor,
         padding:       "4px 10px",
         borderRadius:  2,
-        marginBottom:  "0.75rem",
+        marginBottom:  "0.5rem",
       }}
     >
       {company.sector}
@@ -213,7 +240,7 @@ function SectorBadge({ company }) {
 }
 
 /* ── Liste des prestations ───────────────────────────────────────────────── */
-function ServicesList({ company }) {
+function ServicesList({ company, isMobile }) {
   return (
     <div>
       <p
@@ -231,8 +258,8 @@ function ServicesList({ company }) {
       <div
         style={{
           display:             "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap:                 "6px 16px",
+          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
+          gap:                 "6px 12px",
         }}
       >
         {company.services.map((service) => (
@@ -270,7 +297,7 @@ function ServiceItem({ service, color }) {
 }
 
 /* ── CTA ─────────────────────────────────────────────────────────────────── */
-function CTAButton({ company }) {
+function CTAButton({ company, isMobile }) {
   const handleMouseEnter = (e) => {
     e.currentTarget.style.background = company.accentColor;
   };
@@ -284,13 +311,14 @@ function CTAButton({ company }) {
       target="_blank"
       rel="noopener noreferrer"
       style={{
-        display:        "inline-flex",
+        display:        isMobile ? "flex" : "inline-flex",
+        justifyContent: isMobile ? "center" : "flex-start",
         alignItems:     "center",
         gap:            8,
         background:     company.color,
         color:          "#fff",
         textDecoration: "none",
-        padding:        "12px 24px",
+        padding:        isMobile ? "11px 16px" : "12px 24px",
         fontSize:       12,
         fontWeight:     600,
         letterSpacing:  "0.08em",
@@ -298,6 +326,8 @@ function CTAButton({ company }) {
         fontFamily:     "'Courier New', monospace",
         borderRadius:   2,
         transition:     "background 0.2s ease",
+        width:          isMobile ? "100%" : "auto",
+        boxSizing:      "border-box",
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

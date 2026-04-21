@@ -6,13 +6,19 @@ import CompanyCard from "./CompanyCard";
  */
 export default function CompaniesSection() {
   return (
-    <section style={{ maxWidth: 1200, margin: "0 auto", padding: "0 2rem 8rem" }}>
+    <section
+      style={{
+        maxWidth: 1200,
+        margin:   "0 auto",
+        padding:  "0 1rem 4rem",      // padding horizontal réduit sur mobile
+      }}
+    >
       <SectionHeader />
       <div
         style={{
           display:       "flex",
           flexDirection: "column",
-          gap:           "1.5rem",
+          gap:           "1rem",       // gap légèrement réduit
         }}
       >
         {companies.map((company, index) => (
@@ -26,7 +32,7 @@ export default function CompaniesSection() {
 /* En-tête de la section */
 function SectionHeader() {
   return (
-    <div style={{ marginBottom: "3rem" }}>
+    <div style={{ marginBottom: "2rem" }}>
       <p
         style={{
           fontSize:      11,
@@ -34,7 +40,8 @@ function SectionHeader() {
           textTransform: "uppercase",
           color:         "#999",
           fontFamily:    "'Courier New', monospace",
-          marginBottom:  "0.75rem",
+          marginBottom:  "0.5rem",
+          margin:        0,
         }}
       >
         Notre groupe
@@ -42,11 +49,11 @@ function SectionHeader() {
       <h2
         style={{
           fontFamily:    "'Georgia', serif",
-          fontSize:      "clamp(1.8rem, 3vw, 2.8rem)",
+          fontSize:      "clamp(1.5rem, 5vw, 2.8rem)",  // min plus petit pour mobile
           fontWeight:    700,
           letterSpacing: "-0.02em",
           color:         "#1A1A18",
-          margin:        0,
+          margin:        "0.4rem 0 0",
         }}
       >
         Nos entreprises
