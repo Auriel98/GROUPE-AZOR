@@ -57,8 +57,8 @@ export default function Navbar() {
             onClick={(e) => e.preventDefault()}
             style={{ textDecoration: "none" }}
           >
-            <span style={{ color: "#fff", fontWeight: 700 }}>GROUPE</span>
-            <span style={{ color: "#f59e0b", marginLeft: 5 }}>AZOR</span>
+            <span style={{ color: "#fff", fontWeight: 700 }}>GABIZOCK</span>
+            <span style={{ color: "#f59e0b", marginLeft: 5 }}>GROUP</span>
           </a>
 
           {/* DESKTOP */}
